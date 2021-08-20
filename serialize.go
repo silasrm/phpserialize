@@ -15,6 +15,7 @@ type MarshalOptions struct {
 	// If this is true, then all struct names will be stripped from objects
 	// and "stdClass" will be used instead. The default value is false.
 	OnlyStdClass bool
+	CustomClassName   string
 }
 
 // DefaultMarshalOptions will create a new instance of MarshalOptions with
@@ -189,6 +190,10 @@ func MarshalStruct(input interface{}, options *MarshalOptions) ([]byte, error) {
 	className := reflect.ValueOf(input).Type().Name()
 	if options.OnlyStdClass {
 		className = "stdClass"
+	}
+	
+	if options.CustomClassName != nil {
+		className = options.CustomClassName
 	}
 
 	return []byte(fmt.Sprintf("O:%d:\"%s\":%d:{%s}", len(className),
