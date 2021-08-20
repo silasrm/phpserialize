@@ -192,7 +192,7 @@ func MarshalStruct(input interface{}, options *MarshalOptions) ([]byte, error) {
 		className = "stdClass"
 	}
 	
-	if options.CustomClassName != nil {
+	if options.CustomClassName != "" {
 		className = options.CustomClassName
 	}
 
