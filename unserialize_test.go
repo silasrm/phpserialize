@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/elliotchance/phpserialize"
+	"github.com/silasrm/phpserialize"
 )
 
 func expectErrorToNotHaveOccurred(t *testing.T, err error) {
@@ -578,7 +578,7 @@ func TestUnmarshalArrayThatContainsObject(t *testing.T) {
 	}
 }
 
-// https://github.com/elliotchance/phpserialize/issues/7
+// https://github.com/silasrm/phpserialize/issues/7
 func TestUnmarshalArrayThatContainsInteger(t *testing.T) {
 	data := `a:3:{s:4:"name";s:2:"tw";s:3:"age";i:123;s:4:"wife";a:1:{s:1:"x";s:1:"y";}}`
 	var result map[interface{}]interface{}
@@ -618,7 +618,7 @@ func TestUnmarshalObjectThatContainsArray(t *testing.T) {
 	}
 }
 
-// https://github.com/elliotchance/phpserialize/issues/1
+// https://github.com/silasrm/phpserialize/issues/1
 func TestUnmarshalMultibyte(t *testing.T) {
 	data := `a:3:{i:0;a:2:{i:0;s:6:"白色";i:1;s:6:"黑色";}i:1;a:3:{i:0;s:3:"大";i:1;s:3:"中";i:2;s:3:"小";}i:2;a:2:{i:0;s:3:"女";i:1;s:3:"男";}}`
 	var result map[interface{}]interface{}

@@ -2,12 +2,27 @@ package phpserialize
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"log"
+	"os"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
+
+func Log(s interface{}) {
+	// If the file doesn't exist, create it or append to the file
+	file, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.SetOutput(file)
+	log.Println(s)
+}
 
 // MarshalOptions must be provided when invoking Marshal(). Use
 // DefaultMarshalOptions() for sensible defaults.
@@ -152,6 +167,76 @@ func MarshalStruct(input interface{}, options *MarshalOptions) ([]byte, error) {
 	visibleFieldCount := 0
 
 	var buffer bytes.Buffer
+
+	// If is struct of gopkg.in/guregu/null.v4 package, return value instead of struct
+	if typeOfValue.String() == "null.String" {
+		validField, hasValidField := value.Type().FieldByName("Valid")
+
+		if hasValidField && value.FieldByIndex(validField.Index).Kind() == reflect.Bool && !value.FieldByIndex(validField.Index).Bool() {
+			return MarshalNil(), nil
+		} else {
+			stringField, hasStringField := value.Type().FieldByName("String")
+
+			if hasStringField {
+				return MarshalString(value.FieldByIndex(stringField.Index).String()), nil
+			}
+		}
+	} else if typeOfValue.String() == "null.Int" {
+		validField, hasValidField := value.Type().FieldByName("Valid")
+
+		if hasValidField && value.FieldByIndex(validField.Index).Kind() == reflect.Bool && !value.FieldByIndex(validField.Index).Bool() {
+			return MarshalNil(), nil
+		} else {
+			intField, hasIntField := value.Type().FieldByName("Int")
+
+			if hasIntField {
+				return MarshalInt(value.FieldByIndex(intField.Index).Int()), nil
+			}
+		}
+	} else if typeOfValue.String() == "null.Float" {
+		validField, hasValidField := value.Type().FieldByName("Valid")
+
+		if hasValidField && value.FieldByIndex(validField.Index).Kind() == reflect.Bool && !value.FieldByIndex(validField.Index).Bool() {
+			return MarshalNil(), nil
+		} else {
+			floatField, hasFloatField := value.Type().FieldByName("Float64")
+
+			if hasFloatField {
+				return MarshalFloat(value.FieldByIndex(floatField.Index).Float(), 64), nil
+			}
+		}
+	} else if typeOfValue.String() == "null.Time" {
+		validField, hasValidField := value.Type().FieldByName("Valid")
+
+		if hasValidField && value.FieldByIndex(validField.Index).Kind() == reflect.Bool && !value.FieldByIndex(validField.Index).Bool() {
+			return MarshalNil(), nil
+		} else {
+			timeField, hasTimeField := value.Type().FieldByName("Time")
+
+			if hasTimeField {
+				timeFieldValue := value.FieldByIndex(timeField.Index).Bytes()
+				if bytes.Equal(timeFieldValue, nil) {
+					return nil, nil
+				}
+
+				var tValue time.Time
+				if err := json.Unmarshal(timeFieldValue, &tValue); err != nil {
+					return MarshalNil(), nil
+				}
+
+				return MarshalString(tValue.String()), nil
+			}
+		}
+	} else if typeOfValue.String() == "null.Bool" {
+		boolField, hasBoolField := value.Type().FieldByName("Bool")
+
+		if !hasBoolField {
+			return MarshalNil(), nil
+		} else {
+			return MarshalBool(value.FieldByIndex(boolField.Index).Bool()), nil
+		}
+	}
+
 	for i := 0; i < value.NumField(); i++ {
 		f := value.Field(i)
 
